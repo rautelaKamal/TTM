@@ -16,6 +16,7 @@ RUN pnpm install --frozen-lockfile
 FROM node:20-alpine AS build
 WORKDIR /app
 
+RUN apk add --no-cache openssl
 RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
 
 COPY --from=deps /app ./
