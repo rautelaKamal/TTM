@@ -1,0 +1,23 @@
+{
+  "name": "@ttm/db",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "prisma generate",
+    "dev": "prisma generate --watch",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.19.0"
+  },
+  "devDependencies": {
+    "@ttm/typescript-config": "workspace:*",
+    "prisma": "^5.19.0",
+    "typescript": "^5.5.0"
+  }
+}

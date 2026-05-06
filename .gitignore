@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+.next/
+out/
+
+# env
+.env
+.env.local
+.env.*.local
+
+# turbo
+.turbo/
+
+# prisma
+packages/db/prisma/migrations/**/migration_lock.toml
+
+# ide
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# os
+.DS_Store
+Thumbs.db
+
+# debug
+npm-debug.log*
+pnpm-debug.log*

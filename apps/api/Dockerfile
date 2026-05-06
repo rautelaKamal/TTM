@@ -1,0 +1,40 @@
+# ---- Stage 1: deps ----
+FROM node:20-alpine AS deps
+WORKDIR /app
+
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY packages/db/package.json ./packages/db/
+COPY packages/typescript-config/package.json ./packages/typescript-config/
+COPY packages/eslint-config/package.json ./packages/eslint-config/
+COPY apps/api/package.json ./apps/api/
+
+RUN corepack enable && pnpm install --frozen-lockfile
+
+# ---- Stage 2: build ----
+FROM node:20-alpine AS build
+WORKDIR /app
+
+COPY --from=deps /app ./
+COPY . .
+
+RUN pnpm --filter @ttm/db exec prisma generate
+RUN pnpm --filter @ttm/api build
+
+# ---- Stage 3: runner ----
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+COPY --from=build /app/apps/api/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/packages/db/node_modules ./packages/db/node_modules
+COPY --from=build /app/packages/db/prisma ./prisma
+COPY apps/api/entrypoint.sh ./entrypoint.sh
+
+# Make entrypoint executable (also run: chmod +x apps/api/entrypoint.sh locally)
+RUN chmod +x ./entrypoint.sh
+
+EXPOSE 4000
+
+CMD ["sh", "entrypoint.sh"]
