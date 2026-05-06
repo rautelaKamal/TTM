@@ -14,6 +14,8 @@ RUN corepack enable && pnpm install --frozen-lockfile
 FROM node:20-alpine AS build
 WORKDIR /app
 
+RUN corepack enable
+
 COPY --from=deps /app ./
 COPY . .
 
