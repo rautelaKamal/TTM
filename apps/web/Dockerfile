@@ -2,19 +2,21 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 
+RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
+
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/db/package.json ./packages/db/
 COPY packages/typescript-config/package.json ./packages/typescript-config/
 COPY packages/eslint-config/package.json ./packages/eslint-config/
 COPY apps/web/package.json ./apps/web/
 
-RUN corepack enable && pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # ---- Stage 2: build ----
 FROM node:20-alpine AS build
 WORKDIR /app
 
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
 
 COPY --from=deps /app ./
 COPY . .
