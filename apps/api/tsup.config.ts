@@ -9,4 +9,5 @@ export default defineConfig({
   splitting: false,
   sourcemap: true,
   noExternal: ["@ttm/db"],
+  external: ["@prisma/client"],
 });
