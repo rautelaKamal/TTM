@@ -1,48 +1,57 @@
-# Handoff to Opus: TTM Monorepo Deployment
+# Handoff to Opus: TTM Monorepo Deployment Finalization
 
 ## What Gemini Accomplished
-I picked up where you left off and prepared the monorepo for deployment:
 
-1. **Git Initialization & Push:** 
-   - Initialized the git repository.
-   - Committed the entire completed monorepo (all 5 phases).
-   - Pushed the code to GitHub: [https://github.com/rautelaKamal/TTM.git](https://github.com/rautelaKamal/TTM.git)
-2. **Build Verification:**
-   - Ran `pnpm turbo run build` locally. 
-   - **Result:** Successfully compiled all 3 packages (`@ttm/db`, `@ttm/api`, `@ttm/web`) with zero errors. The standalone Next.js build and Express `tsup` build are working perfectly.
-3. **Docker Check:**
-   - Attempted to start `docker-compose up -d` locally, but the Docker daemon wasn't running on the machine. Since the turbo build passed, I moved straight to Railway deployment prep.
-4. **Railway CLI & Config Research:**
-   - Installed the `@railway/cli` globally via npm.
-   - Researched Railway's current deployment patterns for monorepos (2024/2025). 
-   - **Crucial Finding:** Railway *does not* support deploying multiple services (API and Web) from a single `railway.toml` file at the root. The existing `railway.toml` syntax with `[services.api]` is invalid for Railway's current system.
+I have resolved all the critical issues preventing the successful deployment of the TTM monorepo to Railway:
 
-## Where Gemini Left Off
-I attempted to authenticate with the Railway CLI using `railway login --browserless`, but this requires the user to manually visit a link and enter a code. Since I cannot do that as an agent, the deployment process is paused here.
+1. **API PORT Binding Fix:** 
+   - Modified `apps/api/src/index.ts` to properly read the `PORT` environment variable injected by Railway (previously only read `API_PORT`), ensuring the API binds to the correct port and passes health checks.
+2. **Railway Configuration Overhaul:**
+   - Replaced the invalid multi-service syntax (`[services.api]`, `[services.web]`) in `railway.toml` which Railway no longer supports.
+   - The new `railway.toml` now contains a generic single-service config with comprehensive deployment instructions embedded as comments.
+3. **API Dockerfile Corrections:**
+   - Fixed the `entrypoint.sh` copy instruction to correctly copy from the build stage (`--from=build`) rather than the local context (which isn't present in the runner stage).
+   - Fixed the path for the Prisma generated client to ensure it's properly copied to `.prisma` under `node_modules`.
+4. **Web Dockerfile Build-Time Variables:**
+   - Added `ARG` and `ENV` for `NEXT_PUBLIC_API_URL` to ensure Next.js can inline the API URL into the static bundle during the `next build` phase.
+5. **CI/CD Workflow Enhancements (`deploy.yml`):**
+   - Fixed the `pnpm` version mismatch (from `8` to `9`) to align with `package.json`.
+   - Added a PR trigger for CI checks to ensure PRs are tested.
+   - Constrained the deploy jobs to only run on pushes to `main`.
+   - Switched to using Railway service ID secrets (`RAILWAY_API_SERVICE_ID`, `RAILWAY_WEB_SERVICE_ID`) for proper routing during CLI deployment.
+6. **Build Verification & Commit:**
+   - Successfully ran `pnpm turbo run build` with zero errors across all three packages (`@ttm/db`, `@ttm/api`, `@ttm/web`).
+   - Committed and pushed all fixes to the `main` branch.
 
-## What Opus Needs To Do Next
-The user wants to deploy this to Railway and get the live production links. 
+## What Needs to Be Done Ahead
 
-### 1. Fix the Railway Configuration
-Delete or ignore the root `railway.toml`. Railway requires you to either:
-- Create separate services in the Railway Dashboard UI and point their "Root Directory" to `apps/api` and `apps/web`.
-- OR use the Railway CLI to link the GitHub repo and provision the services.
+The remaining work requires manual configuration within the Railway Dashboard UI. 
 
-### 2. Deploy the Services via Railway Dashboard (Recommended)
-Since the code is already pushed to GitHub, the easiest and most robust way to deploy is through the Railway Dashboard:
+### Step-by-Step Deployment Task
+1. **Create the Project & Database:**
+   - Create a new project named `TTM` on Railway.
+   - Provision a new PostgreSQL database plugin.
 
-1. Instruct the user to go to the Railway Dashboard and create a new project.
-2. **Database:** Add a PostgreSQL plugin.
-3. **API Service:** 
-   - Deploy from the GitHub repo.
-   - In Settings > Service, set the **Root Directory** to `/apps/api`.
-   - Railway will automatically detect the Dockerfile in `apps/api/Dockerfile`.
-   - Set the required Environment Variables (`DATABASE_URL` from the Postgres plugin, `JWT_SECRET`, `CORS_ORIGIN`).
-4. **Web Service:**
-   - Deploy from the same GitHub repo again.
-   - In Settings > Service, set the **Root Directory** to `/apps/web`.
-   - Railway will detect `apps/web/Dockerfile`.
-   - Set the required Environment Variables (`NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `JWT_SECRET`, `NEXT_PUBLIC_API_URL` pointing to the API service's public domain).
+2. **Deploy the API Service:**
+   - Create a new service pointing to the GitHub repo (`rautelaKamal/TTM`).
+   - In Settings > Source, leave Root Directory as `/` and set Dockerfile Path to `apps/api/Dockerfile`.
+   - Add the necessary Environment Variables: `DATABASE_URL` (reference), `JWT_SECRET` (generate one), `PORT` (4000), `NODE_ENV` (production).
 
-### 3. Verify Deployment
-Once both services are deployed, provide the user with the final public URLs and ensure they can sign up, create a project, and use the real-time Kanban board!
+3. **Deploy the Web Service:**
+   - Create a second service pointing to the same GitHub repo.
+   - In Settings > Source, leave Root Directory as `/` and set Dockerfile Path to `apps/web/Dockerfile`.
+   - Add the Environment Variables: `NEXTAUTH_SECRET` (same as JWT_SECRET), `JWT_SECRET`, `PORT` (3000), `NODE_ENV` (production).
+
+4. **Wire the Domains Together:**
+   - Generate public domains for both services via Settings > Networking.
+   - Update the API service's `CORS_ORIGIN` to match the Web service's domain.
+   - Update the Web service's `NEXTAUTH_URL` and `NEXT_PUBLIC_API_URL` to match their respective domains.
+   - **Crucial:** Redeploy the Web service after setting `NEXT_PUBLIC_API_URL` so the Next.js build can capture the correct URL.
+
+5. **Optional: CI/CD Integration:**
+   - Generate a Railway Project Token and retrieve the API and Web Service IDs from their settings.
+   - Add these as repository secrets in GitHub (`RAILWAY_TOKEN`, `RAILWAY_API_SERVICE_ID`, `RAILWAY_WEB_SERVICE_ID`) to enable the existing GitHub Actions workflow.
+
+6. **End-to-End Verification:**
+   - Confirm the API health check (`/health`).
+   - Verify the Web application (SignUp, Login, creating a project, and the real-time Kanban board).
