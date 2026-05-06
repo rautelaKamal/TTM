@@ -7,8 +7,7 @@ A full-stack task management application built as a job assignment submission. T
 - Live Application URL: https://web-production-469c7.up.railway.app
 - API Health URL: https://api-production-2e3f.up.railway.app/health
 - GitHub Repository: https://github.com/rautelaKamal/TTM.git
-- Demo Video (2-5 min): ADD_YOUR_VIDEO_LINK_HERE
-
+- Demo Video (2-5 min): https://drive.google.com/file/d/1NfLKS9u9s7IeZmv_Vwk8l7zYk6Yge7vT/view?usp=share_link
 ## Features
 
 - Role-based auth (Admin / Member) with JWT — separate token for browser sessions (NextAuth) and API access (Express)
