@@ -28,11 +28,11 @@ ENV NODE_ENV=production
 
 COPY --from=build /app/apps/api/dist ./dist
 COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/packages/db/node_modules ./packages/db/node_modules
+COPY --from=build /app/packages/db/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/packages/db/prisma ./prisma
-COPY apps/api/entrypoint.sh ./entrypoint.sh
+COPY --from=build /app/apps/api/entrypoint.sh ./entrypoint.sh
 
-# Make entrypoint executable (also run: chmod +x apps/api/entrypoint.sh locally)
+# Make entrypoint executable
 RUN chmod +x ./entrypoint.sh
 
 EXPOSE 4000

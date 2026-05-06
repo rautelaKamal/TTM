@@ -19,6 +19,11 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# NEXT_PUBLIC_* vars are inlined at build time by Next.js.
+# Railway injects env vars into the build environment automatically.
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+
 RUN pnpm --filter @ttm/db exec prisma generate
 RUN pnpm --filter @ttm/web build
 

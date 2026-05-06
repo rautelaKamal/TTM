@@ -3,6 +3,8 @@ name: CI + Deploy
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   ci:
@@ -13,7 +15,7 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 9
 
       - uses: actions/setup-node@v4
         with:
@@ -26,6 +28,7 @@ jobs:
   deploy-api:
     name: Deploy API
     needs: ci
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,13 +37,14 @@ jobs:
         run: npm install -g @railway/cli
 
       - name: Deploy API service
-        run: railway up --service api --detach
+        run: railway up --service ${{ secrets.RAILWAY_API_SERVICE_ID }} --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
   deploy-web:
     name: Deploy Web
     needs: ci
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -49,6 +53,6 @@ jobs:
         run: npm install -g @railway/cli
 
       - name: Deploy Web service
-        run: railway up --service web --detach
+        run: railway up --service ${{ secrets.RAILWAY_WEB_SERVICE_ID }} --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

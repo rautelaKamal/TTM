@@ -14,7 +14,7 @@ import { setupSocket } from "./socket";
 
 const app = express();
 const httpServer = createServer(app);
-const PORT = process.env.API_PORT || 4000;
+const PORT = process.env.PORT || process.env.API_PORT || 4000;
 
 // Attach Socket.IO to the HTTP server and expose it to route handlers
 const io = setupSocket(httpServer);

@@ -1,31 +1,54 @@
 # Railway deployment config for TTM monorepo
-# Two services: api + web, both built from Dockerfiles
+#
+# IMPORTANT: Railway does NOT support multi-service declarations in a single
+# railway.toml. Each service is configured via the Dashboard UI or CLI.
+#
+# This file is used when Railway auto-detects the repo.  It applies to
+# whichever service you link to this repo.
+#
+# ──────────────────────────────────────────────────────────────────────────────
+# HOW TO DEPLOY (Railway Dashboard — recommended):
+#
+# 1. Create a new Project in Railway.
+#
+# 2. Add a PostgreSQL database (Provision → PostgreSQL).
+#    Railway auto-injects $DATABASE_URL into connected services.
+#
+# 3. Create Service #1: API
+#    • "New Service → GitHub Repo" → select rautelaKamal/TTM
+#    • Settings → Source → Root Directory: /
+#    • Settings → Source → Dockerfile Path: apps/api/Dockerfile
+#    • Environment Variables:
+#        DATABASE_URL   = (reference the PostgreSQL service variable)
+#        JWT_SECRET     = <your-secret>
+#        PORT           = 4000
+#        NODE_ENV       = production
+#        CORS_ORIGIN    = https://<your-web-service>.up.railway.app
+#
+# 4. Create Service #2: Web
+#    • "New Service → GitHub Repo" → select rautelaKamal/TTM
+#    • Settings → Source → Root Directory: /
+#    • Settings → Source → Dockerfile Path: apps/web/Dockerfile
+#    • Environment Variables:
+#        NEXTAUTH_URL        = https://<your-web-service>.up.railway.app
+#        NEXTAUTH_SECRET     = <your-secret>
+#        JWT_SECRET          = <same-secret-as-api>
+#        NEXT_PUBLIC_API_URL = https://<your-api-service>.up.railway.app
+#        PORT                = 3000
+#        NODE_ENV            = production
+#
+# 5. Generate a domain for each service:
+#    • Service → Settings → Networking → Generate Domain
+#
+# 6. After first deploy, update CORS_ORIGIN on the API and NEXTAUTH_URL /
+#    NEXT_PUBLIC_API_URL on the Web with the actual generated Railway URLs.
+# ──────────────────────────────────────────────────────────────────────────────
 
-# ═══════════════════════════════════════════════════════
-# SERVICE: api
-# ═══════════════════════════════════════════════════════
-# Env vars to set in Railway dashboard:
-#   DATABASE_URL    — from the Railway PostgreSQL addon (auto-injected)
-#   JWT_SECRET      — your secret for signing API JWTs
-#   PORT            — 4000
-#   NODE_ENV        — production
-#   CORS_ORIGIN     — your Railway web service URL (https://your-web.up.railway.app)
+[build]
+builder = "DOCKERFILE"
 
-[services.api]
-dockerfile = "apps/api/Dockerfile"
+[deploy]
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
 healthcheckPath = "/health"
-restartPolicyType = "ON_FAILURE"
-
-# ═══════════════════════════════════════════════════════
-# SERVICE: web
-# ═══════════════════════════════════════════════════════
-# Env vars to set in Railway dashboard:
-#   NEXTAUTH_URL          — your Railway web service URL (https://your-web.up.railway.app)
-#   NEXTAUTH_SECRET       — your NextAuth session secret
-#   JWT_SECRET            — same value as the API service
-#   NEXT_PUBLIC_API_URL   — your Railway api service URL (https://your-api.up.railway.app)
-#   PORT                  — 3000
-
-[services.web]
-dockerfile = "apps/web/Dockerfile"
-restartPolicyType = "ON_FAILURE"
+healthcheckTimeout = 120
