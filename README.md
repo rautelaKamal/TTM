@@ -2,6 +2,13 @@
 
 A full-stack task management application built as a job assignment submission. The stack is Next.js 14 (App Router) on the frontend, Express.js REST API on the backend, PostgreSQL via Prisma ORM, and Socket.IO for real-time updates. The codebase is organized as a TurboRepo monorepo with shared packages for the database client, TypeScript config, and ESLint config.
 
+## Submission Links
+
+- Live Application URL: https://web-production-469c7.up.railway.app
+- API Health URL: https://api-production-2e3f.up.railway.app/health
+- GitHub Repository: https://github.com/rautelaKamal/TTM.git
+- Demo Video (2-5 min): ADD_YOUR_VIDEO_LINK_HERE
+
 ## Features
 
 - Role-based auth (Admin / Member) with JWT — separate token for browser sessions (NextAuth) and API access (Express)
@@ -32,8 +39,8 @@ A full-stack task management application built as a job assignment submission. T
 Prerequisites: Node 20+, pnpm 8+, Docker Desktop.
 
 ```bash
-git clone https://github.com/your-username/ttm.git
-cd ttm
+git clone https://github.com/rautelaKamal/TTM.git
+cd TTM
 
 pnpm install
 

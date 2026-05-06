@@ -33,9 +33,11 @@ RUN apk add --no-cache openssl
 
 ENV NODE_ENV=production
 
-COPY --from=build /app/apps/api/dist ./dist
+COPY --from=build /app/apps/api/dist ./apps/api/dist
+COPY --from=build /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/packages/db/prisma ./prisma
+COPY --from=build /app/packages/db/node_modules ./packages/db/node_modules
 COPY --from=build /app/apps/api/entrypoint.sh ./entrypoint.sh
 
 # Make entrypoint executable

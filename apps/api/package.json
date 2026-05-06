@@ -9,6 +9,7 @@
     "lint": "eslint src/"
   },
   "dependencies": {
+    "@prisma/client": "^5.22.0",
     "@ttm/db": "workspace:*",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
